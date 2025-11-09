@@ -1,6 +1,7 @@
 # Tutorial: A-Frame VR 360
 
-**Live demo (optional):** https://YOUR-USERNAME.github.io/YOUR-REPO/
+<!--##**Live demo (optional):** https://YOUR-USERNAME.github.io/YOUR-REPO/-->
+**Example https://vicvalens.github.io/vr_aframe/
 
 ## Index
 - [Requirements](#requirements)
