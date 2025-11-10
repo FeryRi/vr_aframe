@@ -2,70 +2,83 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>A-Frame Mobile Walk</title>
+  <title>A-Frame Mobile Walk (forward/back)</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
-    body { margin:0; }
-    /* Evita que el navegador haga scroll/zoom al tocar */
-    html, body, canvas { touch-action: none; }
-    /* Tip opcional en móviles */
-    .hint {
-      position: fixed; left: 0; right: 0; bottom: 8px;
-      text-align: center; font: 14px/1.2 system-ui; opacity: .7; pointer-events: none;
-    }
+    /* Evita gestos del navegador (zoom/scroll) para que 2 dedos funcionen como "atrás" */
+    html, body, canvas { touch-action: none; margin: 0; }
+    .hint {position:fixed;left:0;right:0;bottom:8px;text-align:center;font:14px/1.2 system-ui;opacity:.7;pointer-events:none;}
   </style>
 </head>
 <body>
-  <div class="hint">Mantén presionada la pantalla para caminar</div>
+  <div class="hint">Mantén 1 dedo = avanzar • Mantén 2 dedos = retroceder</div>
 
   <a-scene>
-    <!-- Entorno de ejemplo -->
+    <!-- Escena de ejemplo -->
     <a-plane rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
-    <a-box position="0 1.25 -4" depth="1" height="2.5" width="1" color="#4CC3D9"></a-box>
+    <a-box position="0 1.25 -4" width="1" height="2.5" depth="1" color="#4CC3D9"></a-box>
     <a-sky color="#ECECEC"></a-sky>
 
-    <!-- RIG: en PC te mueves con WASD/flechas; en móvil, con tap-and-hold -->
-    <a-entity id="rig" position="0 1.6 0" wasd-controls mobile-walk="speed: 1.6">
+    <!-- RIG: en PC sigues con WASD/flechas; en móvil usa mobile-walk -->
+    <a-entity id="rig" position="0 1.6 0" wasd-controls mobile-walk="speed: 1.6; backSpeed: 1.2">
       <a-entity id="camera" camera look-controls></a-entity>
     </a-entity>
   </a-scene>
 
   <script>
-    // Componente: caminar mientras la pantalla esté presionada (tap-and-hold)
+    // mobile-walk: 1 dedo = adelante, 2 dedos = atrás
     AFRAME.registerComponent('mobile-walk', {
-      schema: { speed: { default: 1.6 } }, // m/s
+      schema: {
+        speed:     { default: 1.6 }, // m/s hacia adelante
+        backSpeed: { default: 1.2 }  // m/s hacia atrás
+      },
       init: function () {
-        this.walking = false;
         this.dir = new THREE.Vector3();
+        this.sign = 0;                   // 0 quieto, +1 adelante, -1 atrás
+        this.touches = new Set();        // pointerIds activos
 
-        // Listeners (pointer cubre mouse/touch/pen)
-        this._down = () => { this.walking = true; };
-        this._up   = () => { this.walking = false; };
+        // Evita menú contextual en desktop (permite botón derecho como "atrás")
+        window.addEventListener('contextmenu', e => e.preventDefault());
 
-        window.addEventListener('pointerdown', this._down);
-        window.addEventListener('pointerup',   this._up);
-        window.addEventListener('pointercancel', this._up);
-        window.addEventListener('blur', this._up); // por si cambias de app
+        this.onDown = (e) => {
+          this.touches.add(e.pointerId);
+          if (e.pointerType === 'mouse' && e.button === 2) { // botón derecho = atrás
+            this.sign = -1;
+            return;
+          }
+          // En touch: 1 dedo = adelante, 2+ dedos = atrás
+          this.sign = (this.touches.size >= 2) ? -1 : +1;
+        };
+
+        this.onUp = (e) => {
+          this.touches.delete(e.pointerId);
+          if (this.touches.size === 0) { this.sign = 0; }
+          else { this.sign = (this.touches.size >= 2) ? -1 : +1; }
+        };
+
+        window.addEventListener('pointerdown', this.onDown);
+        window.addEventListener('pointerup',   this.onUp);
+        window.addEventListener('pointercancel', this.onUp);
+        window.addEventListener('blur', this.onUp); // si cambias de app, te detienes
       },
       tick: function (t, dt) {
-        if (!this.walking) return;
-        const scene = this.el.sceneEl;
-        const cam = scene && scene.camera;
+        if (this.sign === 0) return;
+        const cam = this.el.sceneEl.camera;
         if (!cam) return;
 
-        // Vector "forward" de la cámara, sin componente vertical
+        // Dirección de la cámara (plana, sin vertical)
         this.dir.set(0, 0, -1).applyQuaternion(cam.quaternion);
-        this.dir.y = 0;
-        this.dir.normalize();
+        this.dir.y = 0; this.dir.normalize();
 
-        const dist = this.data.speed * (dt / 1000); // m por frame
+        const spd = (this.sign > 0) ? this.data.speed : this.data.backSpeed;
+        const dist = spd * (dt / 1000) * this.sign; // usa signo para invertir
         this.el.object3D.position.addScaledVector(this.dir, dist);
       },
       remove: function () {
-        window.removeEventListener('pointerdown', this._down);
-        window.removeEventListener('pointerup', this._up);
-        window.removeEventListener('pointercancel', this._up);
-        window.removeEventListener('blur', this._up);
+        window.removeEventListener('pointerdown', this.onDown);
+        window.removeEventListener('pointerup',   this.onUp);
+        window.removeEventListener('pointercancel', this.onUp);
+        window.removeEventListener('blur', this.onUp);
       }
     });
   </script>
