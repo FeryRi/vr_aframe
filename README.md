@@ -29,11 +29,11 @@
 ```
 vr-aframe-tutorial/
 ├─ index.html
-├─ assets/
-│  ├─ images/360/
-│  ├─ models/
-│  └─ audio/
-└─ README.md
+├─ image1.jpg
+├─ 360image.jpg
+├─ 3Dmodel.glb
+├─ sound.mp3
+├─ video.mp4
 ```
 
 ---
@@ -82,7 +82,7 @@ http://localhost:8000
 Model (inside `<a-scene>` using `<a-assets>`):
 ```
 <a-assets>
-  <a-asset-item id="model" src="assets/models/model.glb"></a-asset-item>
+  <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
 </a-assets>
 
 <a-entity gltf-model="#model" position="0 0 -3" scale="1 1 1"></a-entity>
@@ -90,7 +90,7 @@ Model (inside `<a-scene>` using `<a-assets>`):
 
 360 image (2:1):
 ```
-<a-sky src="assets/images/360/360image.jpg" rotation="0 -90 0"></a-sky>
+<a-sky src="360image.jpg" rotation="0 -90 0"></a-sky>
 ```
 
 ---
@@ -109,7 +109,7 @@ Show/Hide image on click:
        onclick="const img=document.getElementById('revealed-image');img.setAttribute('visible', img.getAttribute('visible')==='false')">
 </a-box>
 
-<a-image id="revealed-image" src="assets/images/image1.jpg"
+<a-image id="revealed-image" src="image1.jpg"
          position="-4 2.5 -3" width="3" height="2" visible="false"></a-image>
 ```
 
@@ -160,7 +160,7 @@ Usage in the scene:
 <!-- On-demand audio -->
 <a-sphere class="interactable" position="4 1.5 -3" radius="0.5" color="#3399FF"
           onclick="document.querySelector('#audio').components.sound.playSound()"></a-sphere>
-<a-sound id="audio" src="assets/audio/sound.mp3" autoplay="false"></a-sound>
+<a-sound id="audio" src="sound.mp3" autoplay="false"></a-sound>
 ```
 
 ---
