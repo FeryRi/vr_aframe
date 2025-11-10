@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>A-Frame Mobile Walk</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>
+    body { margin:0; }
+    /* Evita que el navegador haga scroll/zoom al tocar */
+    html, body, canvas { touch-action: none; }
+    /* Tip opcional en móviles */
+    .hint {
+      position: fixed; left: 0; right: 0; bottom: 8px;
+      text-align: center; font: 14px/1.2 system-ui; opacity: .7; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="hint">Mantén presionada la pantalla para caminar</div>
+
+  <a-scene>
+    <!-- Entorno de ejemplo -->
+    <a-plane rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
+    <a-box position="0 1.25 -4" depth="1" height="2.5" width="1" color="#4CC3D9"></a-box>
+    <a-sky color="#ECECEC"></a-sky>
+
+    <!-- RIG: en PC te mueves con WASD/flechas; en móvil, con tap-and-hold -->
+    <a-entity id="rig" position="0 1.6 0" wasd-controls mobile-walk="speed: 1.6">
+      <a-entity id="camera" camera look-controls></a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    // Componente: caminar mientras la pantalla esté presionada (tap-and-hold)
+    AFRAME.registerComponent('mobile-walk', {
+      schema: { speed: { default: 1.6 } }, // m/s
+      init: function () {
+        this.walking = false;
+        this.dir = new THREE.Vector3();
+
+        // Listeners (pointer cubre mouse/touch/pen)
+        this._down = () => { this.walking = true; };
+        this._up   = () => { this.walking = false; };
+
+        window.addEventListener('pointerdown', this._down);
+        window.addEventListener('pointerup',   this._up);
+        window.addEventListener('pointercancel', this._up);
+        window.addEventListener('blur', this._up); // por si cambias de app
+      },
+      tick: function (t, dt) {
+        if (!this.walking) return;
+        const scene = this.el.sceneEl;
+        const cam = scene && scene.camera;
+        if (!cam) return;
+
+        // Vector "forward" de la cámara, sin componente vertical
+        this.dir.set(0, 0, -1).applyQuaternion(cam.quaternion);
+        this.dir.y = 0;
+        this.dir.normalize();
+
+        const dist = this.data.speed * (dt / 1000); // m por frame
+        this.el.object3D.position.addScaledVector(this.dir, dist);
+      },
+      remove: function () {
+        window.removeEventListener('pointerdown', this._down);
+        window.removeEventListener('pointerup', this._up);
+        window.removeEventListener('pointercancel', this._up);
+        window.removeEventListener('blur', this._up);
+      }
+    });
+  </script>
+</body>
+</html>
