@@ -12,10 +12,12 @@
 - [Step 4: Interaction (mouse/gaze) and image toggle](#step-4-interaction-mousegaze-and-image-toggle)
 - [Step 5: Simple Teleport](#step-5-simple-teleport)
 - [Step 6: Animation and Audio](#step-6-animation-and-audio)
-- [Step 7: Materials](#step-7-materials)
-- [Step 8: Shadows and Post-processing](#step-8-shadows-and-post-processing)
-- [Step 9: Hybrid Controls (PC + VR)](#step-9-hybrid-controls-pc--vr)
-- [Step 10: Publish on GitHub Pages](#step-10-publish-on-github-pages)
+- [Step 7: Video and Poster](#step-7-video-and-poster)
+- [Step 8: Panoramara Cycle](#step-8-360-panorama-cycle)
+- [Step 9: Materials](#step-9-materials)
+- [Step 10: Shadows and Post-processing](#step-10-shadows-and-post-processing)
+- [Step 11: Hybrid Controls (PC + VR)](#step-11-hybrid-controls-pc--vr)
+- [Step 12: Publish on GitHub Pages](#step-12-publish-on-github-pages)
 - [Credits](#credits)
 
 ---
@@ -234,6 +236,60 @@ Usage in the scene:
 <a-box class="interactable" position="-3 1 -3" color="#FFC107" teleport-on-click></a-box>
 <a-entity id="teleport-point" position="5 1.6 0"></a-entity>
 ```
+Example:
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 5</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene>
+    <!-- Background color -->
+    <a-sky color="#BBDFFF"></a-sky>
+
+    <!-- Start point -->
+    <a-entity id="start-point" position="0 1.6 0"></a-entity>
+
+    <!-- RIG: (WASD/keyboard arrows) -->
+    <a-entity id="rig" wasd-controls position="0 1.6 0">
+      <a-entity camera look-controls></a-entity>
+    </a-entity>
+
+    <!-- Cursor -->
+    <a-entity cursor="rayOrigin: mouse" raycaster="objects: .interactable"></a-entity>
+
+    <!-- Teletransport object -->
+    <a-box class="interactable"
+           position="0 1 -2" width="0.6" height="0.6" depth="0.6"
+           color="#FFC107" teleport-on-click></a-box>
+  </a-scene>
+
+  <script>
+    // Center ojects at start
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      const rig = document.getElementById('rig');
+      const p   = document.getElementById('start-point').object3D.position;
+      rig.object3D.position.copy(p);
+    });
+
+    // Teletransport position on click
+    AFRAME.registerComponent('teleport-on-click', {
+      init: function () {
+        this.el.addEventListener('click', () => {
+          const rig = document.getElementById('rig');
+          const p   = document.getElementById('start-point').object3D.position;
+          rig.object3D.position.copy(p);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+```
 
 ---
 
@@ -248,10 +304,170 @@ Usage in the scene:
           onclick="document.querySelector('#audio').components.sound.playSound()"></a-sphere>
 <a-sound id="audio" src="sound.mp3" autoplay="false"></a-sound>
 ```
+Example:
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 6</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene>
+    <!-- Solid background -->
+    <a-sky color="#BBDFFF"></a-sky>
 
+    <!-- Light so the GLB is visible (PBR) -->
+    <a-entity light="type: hemisphere; intensity: 1; groundColor: #666" position="0 4 0"></a-entity>
+
+    <!-- Rig: look with mouse, move with keyboard -->
+    <a-entity id="rig" wasd-controls position="0 1.6 0">
+      <a-entity camera look-controls></a-entity>
+    </a-entity>
+
+    <!-- Mouse cursor to click the audio trigger -->
+    <a-entity cursor="rayOrigin: mouse" raycaster="objects: .interactable"></a-entity>
+
+    <!-- Assets: GLB model + MP3 -->
+    <a-assets>
+      <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
+      <audio id="mp3" src="sound.mp3" preload="auto"></audio>
+    </a-assets>
+
+    <!-- (1) Floating 3D model -->
+    <a-entity gltf-model="#model"
+              position="0 1.4 -3" scale="1 1 1" rotation="0 20 0"
+              animation="property: object3D.position.y; to: 1.7; dir: alternate; dur: 1500; loop: true">
+    </a-entity>
+
+    <!-- (2) Clickable sphere that plays an MP3 -->
+    <a-sphere class="interactable" position="1.5 1.25 -2.5" radius="0.4" color="#3399FF"
+              onclick="document.querySelector('#hit-sound').components.sound.playSound()">
+    </a-sphere>
+    <a-sound id="hit-sound" src="#mp3" autoplay="false"></a-sound>
+  </a-scene>
+</body>
+</html>
+```
 ---
+## Step 7: Video and Poster
+Example:
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 7</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene>
+    <!-- Background color -->
+    <a-sky color="#BBDFFF"></a-sky>
 
-## Step 7: Materials
+    <!-- Movement: look with mouse, move with keyboard -->
+    <a-entity id="rig" wasd-controls position="0 1.6 0">
+      <a-entity camera look-controls></a-entity>
+    </a-entity>
+
+    <!-- Mouse cursor to click the video plane -->
+    <a-entity cursor="rayOrigin: mouse" raycaster="objects: .interactable"></a-entity>
+
+    <!-- Assets: MP4 video + poster image -->
+    <a-assets>
+      <video id="clip" src="video.mp4" playsinline webkit-playsinline loop></video>
+      anonymous"></video>
+      <img id="poster" src="poster.jpg">
+    </a-assets>
+
+    <!-- Video screen (click to play/pause) -->
+    <a-video class="interactable"
+             src="#clip"
+             position="0 1.5 -3"
+             width="3.2" height="1.8"
+             onclick="
+               const v=document.getElementById('clip');
+               if(v.paused){ v.play(); } else { v.pause(); }
+             ">
+    </a-video>
+
+    <!-- Poster -->
+    <a-image src="#poster"
+             position="2 1.6 -2"
+             width="1.2" height="1.8"
+             rotation="0 -90 0">
+    </a-image>
+  </a-scene>
+</body>
+</html>
+```
+## Step 8: 360 Panorama cycle
+Example:
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 8</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene>
+    <!-- Preload three 360 images -->
+    <a-assets>
+      <img id="p1" src="360image01.jpg">
+      <img id="p2" src="360image02.jpg">
+      <img id="p3" src="360image03.jpg">
+    </a-assets>
+
+    <!-- Camera: look around with mouse -->
+    <a-entity camera look-controls position="0 1.6 0"></a-entity>
+
+    <!-- Mouse cursor to click the sphere -->
+    <a-entity cursor="rayOrigin: mouse" raycaster="objects: .interactable"></a-entity>
+
+    <!-- 360 background -->
+    <a-sky id="sky" src="#p1"></a-sky>
+
+    <!-- Sphere that changes the 360 background and moves each click -->
+    <a-sphere id="cycler" class="interactable" radius="0.25" color="#FF7F50"></a-sphere>
+  </a-scene>
+
+  <script>
+    // Minimal cycler: click the sphere -> change sky image and move sphere
+    AFRAME.registerComponent('cycle-panos', {
+      init: function () {
+        this.idx = 0;
+        this.panos = ['#p1', '#p2', '#p3'];
+        this.positions = [
+          new THREE.Vector3(0, 1.25, -2),
+          new THREE.Vector3(-1.2, 1.3, -2.2),
+          new THREE.Vector3(1.4, 1.2, -1.8)
+        ];
+        // place sphere for the initial 360 image
+        this.el.object3D.position.copy(this.positions[this.idx]);
+
+        this.el.addEventListener('click', () => {
+          this.idx = (this.idx + 1) % this.panos.length;
+          document.getElementById('sky').setAttribute('src', this.panos[this.idx]);
+          this.el.object3D.position.copy(this.positions[this.idx]);
+        });
+      }
+    });
+
+    // Attach the component to the sphere
+    document.getElementById('cycler').setAttribute('cycle-panos', '');
+  </script>
+</body>
+</html>
+```
+
+
+## Step 9: Materials (optional)
 ```
 <!-- Metal -->
 material="metalness: 1; roughness: 0; color: #888"
@@ -265,7 +481,7 @@ material="color: #FF00FF; metalness: 0; roughness: 0.3"
 
 ---
 
-## Step 8: Shadows and Post-processing (optional)
+## Step 10: Shadows and Post-processing (optional)
 ```
 <script src="https://cdn.jsdelivr.net/gh/supermedium/superframe@master/components/postprocessing/dist/aframe-postprocessing-component.min.js"></script>
 
@@ -281,7 +497,7 @@ material="color: #FF00FF; metalness: 0; roughness: 0.3"
 
 ---
 
-## Step 9: Hybrid Controls (PC + VR)
+## Step 11: Hybrid Controls (PC + VR)
 ```
 <!-- Extras: movement-controls (gamepad/keyboard) -->
 <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@latest/dist/aframe-extras.min.js"></script>
@@ -297,7 +513,7 @@ material="color: #FF00FF; metalness: 0; roughness: 0.3"
 
 ---
 
-## Step 10: Publish on GitHub Pages
+## Step 12: Publish on GitHub Pages
 
 Make sure you have `index.html` at the **root** (or inside `/docs`).
 
