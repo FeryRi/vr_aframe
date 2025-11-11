@@ -118,6 +118,8 @@ Example:
 </body>
 </html>
 ```
+**For a Hard Reload (bypass cache) ⌘ + Shift + R (for mac) Ctrl + F5 or Shift + F5 or Ctrl + Shift + R (for Windows)
+
 ---
 
 ## Step 4: Interaction (mouse/gaze) and image toggle
