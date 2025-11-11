@@ -33,7 +33,9 @@ vr-aframe-tutorial/
 ├─ index.html
 ├─ image1.jpg
 ├─ image1.png
-├─ 360image.jpg
+├─ 360image01.jpg
+├─ 360image02.jpg
+├─ 360image03.jpg
 ├─ 3Dmodel.glb
 ├─ sound.mp3
 ├─ video.mp4
@@ -94,7 +96,7 @@ Model (inside `<a-scene>` using `<a-assets>`):
 
 360 image (2:1):
 ```
-<a-sky src="assets/360image.jpg" rotation="0 -90 0"></a-sky>
+<a-sky src="assets/360image01.jpg" rotation="0 -90 0"></a-sky>
 ```
 Example:
 ```
@@ -467,32 +469,217 @@ Example:
 ```
 
 
-## Step 9: Materials (optional)
+## Step 9: Materials
+Example:
 ```
-<!-- Metal -->
-material="metalness: 1; roughness: 0; color: #888"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 9</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <!-- Renderer: physically-correct, ACES tone mapping, antialias -->
+  <a-scene renderer="physicallyCorrectLights: true; colorManagement: true; toneMapping: ACESFilmicToneMapping; antialias: true">
+    <a-assets>
+      <!-- 360 pano used for background + reflections -->
+      <img id="pano" src="360image01.jpg">
+      <!-- texture for the cylinder -->
+      <img id="tex1" src="texture.jpg">
+    </a-assets>
 
-<!-- Glass / transparent -->
-material="color: #AAF; opacity: 0.3; transparent: true; roughness: 0.1; metalness: 0.5"
+    <!-- 360 background -->
+    <a-sky id="sky" src="#pano"></a-sky>
 
-<!-- Plastic -->
-material="color: #FF00FF; metalness: 0; roughness: 0.3"
+    <!-- Soft “ambient” and a key light for crisp highlights -->
+    <a-entity light="type: hemisphere; intensity: 1; groundColor: #666" position="0 4 0"></a-entity>
+    <a-entity light="type: directional; intensity: 1.2" position="2 4 2"></a-entity>
+
+    <!-- Camera/controls -->
+    <a-entity id="rig" wasd-controls position="0 1.6 0">
+      <a-entity camera look-controls></a-entity>
+    </a-entity>
+
+    <!-- Metal sphere (mirror-like) -->
+    <a-sphere position="-1.8 1 -3" radius="0.5"
+              material="metalness: 1; roughness: 0.05; color: #888">
+    </a-sphere>
+
+    <!-- Glass cube (transparent) -->
+    <a-box position="0 1 -3" depth="1" height="1" width="1"
+           material="color: #aaf; opacity: 0.25; transparent: true; metalness: 0.5; roughness: 0.05">
+    </a-box>
+
+    <!-- Shiny plastic cone -->
+    <a-cone position="1.8 1 -3" height="1.2" radius-bottom="0.6"
+            material="color: #ff00ff; metalness: 0.5; roughness: 0.25">
+    </a-cone>
+
+    <!-- Cylinder with image texture -->
+    <a-cylinder position="0 0.75 -1.5" radius="0.4" height="1.5"
+                material="src: #tex1; roughness: 0.4; metalness: 0.1">
+    </a-cylinder>
+  </a-scene>
+
+  <script>
+    // Use the pano as the environment map (reflections) via PMREM
+    const sceneEl = document.querySelector('a-scene');
+    sceneEl.addEventListener('loaded', () => {
+      const renderer = sceneEl.renderer;
+      if (!renderer) return;
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      new THREE.TextureLoader().load(
+        document.getElementById('pano').getAttribute('src'),
+        (tex) => {
+          tex.mapping = THREE.EquirectangularReflectionMapping;
+          // Prefilter for PBR (smoother, realistic reflections)
+          const envMap = pmrem.fromEquirectangular(tex).texture;
+          sceneEl.object3D.background = tex;     // keep pano as background
+          sceneEl.object3D.environment = envMap; // reflections for PBR
+        }
+      );
+    });
+  </script>
+</body>
+</html>
 ```
 
 ---
 
-## Step 10: Shadows and Post-processing (optional)
+## Step 10: Shadows and Post-processing
+Example:
 ```
-<script src="https://cdn.jsdelivr.net/gh/supermedium/superframe@master/components/postprocessing/dist/aframe-postprocessing-component.min.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 10</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene
+    renderer="physicallyCorrectLights: true; colorManagement: true; toneMapping: ACESFilmicToneMapping; antialias: true"
+    shadow="type: pcfsoft">
 
-<a-scene shadow="type: pcfsoft" postprocessing="bloom: true; ssao: true">
-  <a-light type="directional" color="#fff" intensity="0.4" position="2 4 4" castShadow="true"></a-light>
-  <a-light type="ambient" intensity="0.4"></a-light>
+    <!-- Assets -->
+    <a-assets>
+      <!-- Environment -->
+      <img id="pano" src="360image01.jpg">
+      <img id="tex1" src="texture.jpg">
+    </a-assets>
 
-  <!-- Entity shadows -->
-  <a-entity gltf-model="#model" shadow="cast: true; receive: true"></a-entity>
-  <a-plane rotation="-90 0 0" width="10" height="10" color="#7BC8A4" shadow="receive: true"></a-plane>
-</a-scene>
+    <!-- Visible 360 background -->
+    <a-sky id="sky" src="#pano"></a-sky>
+
+    <!-- Lights -->
+    <a-entity id="sun"
+      light="type: directional; intensity: 1.2; castShadow: true"
+      position="3 6 3" rotation="-45 45 0">
+    </a-entity>
+    <a-entity light="type: ambient; intensity: 0.35"></a-entity>
+
+    <!-- Camera / controls -->
+    <a-entity id="rig" wasd-controls position="0 1.6 0">
+      <a-entity camera look-controls></a-entity>
+    </a-entity>
+
+    <!-- Transparent ground that only shows shadows -->
+    <a-plane rotation="-90 0 0" position="0 0 -3" width="12" height="12"
+             shadow="receive: true" shadow-receiver="opacity: 0.28">
+    </a-plane>
+
+    <!-- Objects (cast shadows) -->
+    <!-- Metal sphere (strong reflections) -->
+    <a-sphere position="-1.8 1 -3" radius="0.5"
+              material="metalness: 1; roughness: 0.05; color: #888"
+              shadow="cast: true"></a-sphere>
+
+    <!-- Glassy cube (semi-transparent, reflective) -->
+    <a-box position="0 1 -3" depth="1" height="1" width="1"
+           material="color: #aaf; opacity: 0.3; transparent: true; metalness: 0.5; roughness: 0.05"
+           shadow="cast: true"></a-box>
+
+    <!-- Shiny plastic cone -->
+    <a-cone position="1.8 1 -3" height="1.2" radius-bottom="0.6"
+            material="color: #ff00ff; metalness: 0; roughness: 0.25"
+            shadow="cast: true"></a-cone>
+
+    <!-- Cylinder with texture -->
+    <a-cylinder position="0 0.75 -1.5" radius="0.4" height="1.5"
+                material="src: #tex1; roughness: 0.4; metalness: 0.05"
+                shadow="cast: true"></a-cylinder>
+  </a-scene>
+
+  <script>
+    // 1) Transparent shadow ground (THREE.ShadowMaterial)
+    AFRAME.registerComponent('shadow-receiver', {
+      schema: { opacity: { default: 0.28 } },
+      init() {
+        this.apply = this.apply.bind(this);
+        this.el.addEventListener('object3dset', this.apply);
+        this.apply();
+      },
+      remove() { this.el.removeEventListener('object3dset', this.apply); },
+      apply() {
+        const mesh = this.el.getObject3D('mesh');
+        if (!mesh) return;
+        mesh.traverse(o => {
+          if (o.isMesh) {
+            o.material = new THREE.ShadowMaterial({ opacity: this.data.opacity });
+            o.material.depthWrite = false;
+            o.receiveShadow = true;
+          }
+        });
+      }
+    });
+    document.querySelector('a-plane').setAttribute('shadow-receiver', 'opacity: 0.28');
+
+    // 2) Soften shadows
+    const sceneEl = document.querySelector('a-scene');
+    sceneEl.addEventListener('loaded', () => {
+      const sun = document.getElementById('sun').getObject3D('light');
+      if (sun && sun.shadow) {
+        sun.shadow.mapSize.set(1024, 1024);
+        sun.shadow.radius = 4;
+        sun.shadow.bias = -0.0001;
+        sun.shadow.normalBias = 0.02;
+        const cam = sun.shadow.camera;
+        cam.near = 0.5; cam.far = 50;
+        cam.left = -12; cam.right = 12; cam.top = 12; cam.bottom = -12;
+        cam.updateProjectionMatrix();
+      }
+
+      // 3) ***ENVIRONMENT REFLECTIONS*** from the 360 pano (PMREM)
+      const renderer = sceneEl.renderer;
+      if (!renderer) return;
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const panoSrc = document.getElementById('pano').getAttribute('src');
+
+      new THREE.TextureLoader().load(
+        panoSrc,
+        (tex) => {
+          // If your pano is sRGB, set color space (A-Frame/three r150+)
+          if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+          // Use as visible background:
+          tex.mapping = THREE.EquirectangularReflectionMapping;
+          sceneEl.object3D.background = tex;
+
+          // Build prefiltered env map for PBR reflections:
+          const envRT = pmrem.fromEquirectangular(tex);
+          sceneEl.object3D.environment = envRT.texture;
+        },
+        undefined,
+        (err) => console.warn('Failed to load pano for env map:', err)
+      );
+    });
+  </script>
+</body>
+</html>
 ```
 
 ---
