@@ -63,7 +63,7 @@ Useful primitives: `<a-box>`, `<a-sphere>`, `<a-cylinder>`, `<a-cone>`, `<a-plan
 
 ---
 
-## Step 2: Run Locally
+## Step 2: Run Locally (Optional)
 
 Server:
 ```
@@ -81,18 +81,30 @@ http://localhost:8000
 
 Model (inside `<a-scene>` using `<a-assets>`):
 ```
-<a-assets>
-  <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
-</a-assets>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>VR Scene. 3d model & 360 environment</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene>
+    <a-assets>
+      <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
+      <img id="pano" src="360image.jpg">
+    </a-assets>
 
-<a-entity gltf-model="#model" position="0 0 -3" scale="1 1 1"></a-entity>
-```
+    <!-- 3D Model -->
+    <a-entity gltf-model="#model" position="0 1.2 -2" scale="1 1 1"></a-entity>
 
-360 image (2:1):
+    <!-- 360 Environment -->
+    <a-sky src="#pano" rotation="0 -90 0"></a-sky>
+  </a-scene>
+</body>
+</html>
 ```
-<a-sky src="360image.jpg" rotation="0 -90 0"></a-sky>
-```
-
 ---
 
 ## Step 4: Interaction (mouse/gaze) and image toggle
