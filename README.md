@@ -118,8 +118,14 @@ Example:
 </body>
 </html>
 ```
-**For a Hard Reload (bypass cache) ⌘ + Shift + R (for mac) Ctrl + F5 or Shift + F5 or Ctrl + Shift + R (for Windows)
+Notes:
+```
+-For a Hard Reload (bypass cache) ⌘ + Shift + R (for mac) Ctrl + F5 or Shift + F5 or Ctrl + Shift + R (for Windows)
 
+-GLB converter: https://imagetostl.com/convert/file/fbx/to/glb
+
+-Install Street View Download 360 for Google Maps 360 images: https://svd360.com/
+```
 ---
 
 ## Step 4: Interaction (mouse/gaze) and image toggle
