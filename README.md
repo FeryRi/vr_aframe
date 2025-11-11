@@ -81,6 +81,19 @@ http://localhost:8000
 
 Model (inside `<a-scene>` using `<a-assets>`):
 ```
+<a-assets>
+  <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
+</a-assets>
+
+<a-entity gltf-model="#model" position="0 0 -3" scale="1 1 1"></a-entity>
+```
+
+360 image (2:1):
+```
+<a-sky src="assets/360image.jpg" rotation="0 -90 0"></a-sky>
+```
+Example:
+```
 <!DOCTYPE html>
 <html>
 <head>
