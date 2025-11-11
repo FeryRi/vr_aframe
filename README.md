@@ -30,6 +30,7 @@
 vr-aframe-tutorial/
 ├─ index.html
 ├─ image1.jpg
+├─ image1.png
 ├─ 360image.jpg
 ├─ 3Dmodel.glb
 ├─ sound.mp3
@@ -44,7 +45,7 @@ vr-aframe-tutorial/
 <html>
 <head>
   <meta charset="utf-8">
-  <title>VR Scene</title>
+  <title>Step 1</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 </head>
 <body>
@@ -56,11 +57,12 @@ vr-aframe-tutorial/
 </body>
 </html>
 ```
+Notes:
+```
+Useful primitives: `<a-box>`, `<a-sphere>`, `<a-cylinder>`, `<a-cone>`, `<a-plane>`, `<a-ring>`, `<a-torus>`, `<a-entity>`polyhedra are not native tags; use `geometry="primitive: dodecahedron"` on `<a-entity>` if needed.
 
-Useful primitives: `<a-box>`, `<a-sphere>`, `<a-cylinder>`, `<a-cone>`, `<a-plane>`, `<a-ring>`, `<a-torus>`, `<a-entity>`
-
-*Note:* polyhedra are not native tags; use `geometry="primitive: dodecahedron"` on `<a-entity>` if needed.
-
+Use HEX colors: https://www.color-hex.com/color-wheel/
+```
 ---
 
 ## Step 2: Run Locally (Optional)
@@ -98,7 +100,7 @@ Example:
 <html>
 <head>
   <meta charset="utf-8">
-  <title>VR Scene. 3d model & 360 environment</title>
+  <title>Step 3</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>body{margin:0}</style>
 </head>
@@ -151,6 +153,57 @@ Random color on click:
 <a-box class="interactable" position="3 1 -3" color="#4CC3D9"
        onclick="this.setAttribute('color','#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'))">
 </a-box>
+```
+Example:
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 4</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>body{margin:0}</style>
+</head>
+<body>
+  <a-scene>
+    <!-- Background color -->
+    <a-sky color="#BBDFFF"></a-sky>
+
+    <!-- Assets -->
+    <a-assets>
+      <img id="img1" src="image1.png">
+    </a-assets>
+
+    <!-- Camera -->
+    <a-entity camera look-controls position="0 1.6 0"></a-entity>
+
+    <!-- Raycast .interactable -->
+    <a-entity cursor="rayOrigin: mouse" raycaster="objects: .interactable"></a-entity>
+
+    <!-- TOGGLE button (boolean) -->
+    <a-box position="-0.8 1.25 -3" width="1.2" height="0.8" depth="0.2"
+           color="#FFFFFF"
+           class="interactable"
+           onclick="
+             const img = document.getElementById('revealed-image');
+             img.setAttribute('visible', !img.getAttribute('visible'));
+           ">
+    </a-box>
+
+    <!-- Image to show/hide -->
+    <a-image id="revealed-image" src="#img1"
+             position="0 2 -3" width="2" height="1.2" visible="false">
+    </a-image>
+
+    <!-- Random color -->
+    <a-box position="0.8 1.25 -3" width="1" height="1" depth="1"
+           color="#4CC3D9"
+           class="interactable"
+           onclick="this.setAttribute('color', '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'))">
+    </a-box>
+  </a-scene>
+</body>
+</html>
 ```
 
 ---
