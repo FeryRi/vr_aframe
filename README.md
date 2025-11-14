@@ -179,7 +179,7 @@ Example:
 
     <!-- Assets -->
     <a-assets>
-      <img id="img1" src="image1.png">
+      <img id="img1" src="ola.png">
     </a-assets>
 
     <!-- Camera -->
