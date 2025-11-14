@@ -7,7 +7,7 @@
 - [Requirements](#requirements)
 - [Project Structure](#project-structure)
 - [Step 1: Basic Scene](#step-1-basic-scene)
-- [Step 2: Run Locally](#step-2-run-locally)
+- [Step 2: Run Locally](#step-2-run-locally-optional)
 - [Step 3: 3D Model and 360 Environment](#step-3-3d-model-and-360-environment)
 - [Step 4: Interaction (mouse/gaze) and image toggle](#step-4-interaction-mousegaze-and-image-toggle)
 - [Step 5: Simple Teleport](#step-5-simple-teleport)
