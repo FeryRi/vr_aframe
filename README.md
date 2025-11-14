@@ -116,7 +116,7 @@ Example:
   <a-scene>
     <a-assets>
       <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
-      <img id="pano" src="360image.jpg">
+      <img id="pano" src="360image01.jpg">
     </a-assets>
 
     <!-- 3D Model -->
