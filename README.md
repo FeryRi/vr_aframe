@@ -73,7 +73,11 @@ Use HEX colors: https://www.color-hex.com/color-wheel/
 
 Server:
 ```
+PC:
 python -m http.server 8000
+
+Mac:
+python3 -m http.server 8000
 ```
 
 Browser:
