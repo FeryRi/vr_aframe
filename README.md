@@ -334,7 +334,7 @@ Example:
 
     <!-- Assets: GLB model + MP3 -->
     <a-assets>
-      <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
+      <a-asset-item id="model" src="flecha.glb"></a-asset-item>
       <audio id="mp3" src="sound.mp3" preload="auto"></audio>
     </a-assets>
 
