@@ -2,61 +2,89 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>A-Frame AR mínimo</title>
+    <title>A-Frame AR / VR - Quest 3</title>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
 
-    <!-- A-Frame (usa versión reciente con WebXR/AR) -->
+    <!-- A-Frame 1.7.0 (con soporte WebXR AR) -->
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 
     <style>
+      html,
       body {
         margin: 0;
         padding: 0;
         overflow: hidden;
-        background: transparent;
+        background: transparent; /* importante para AR */
       }
     </style>
   </head>
 
   <body>
-    <!--
-      NOTA:
-      - No usamos <a-sky> ni fondo sólido para que se vea el passthrough.
-      - El botón "Enter VR/AR" lo pone A-Frame automáticamente.
-    -->
+    <!-- Escena A-Frame -->
     <a-scene
       renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true"
-      webxr="requiredFeatures: local-floor; optionalFeatures: bounded-floor"
+      webxr="referenceSpaceType: local-floor"
+      xr-mode-ui="XRMode: xr; enterAREnabled: true; enterVREnabled: true"
       vr-mode-ui="enabled: true"
       embedded
     >
-      <!-- Cámara en altura de ojos -->
-      <a-entity id="cameraRig">
+      <!-- Cámara -->
+      <a-entity id="rig">
         <a-entity
+          id="camera"
           camera
           position="0 1.6 0"
-          look-controls
+          look-controls="pointerLockEnabled: true"
         ></a-entity>
       </a-entity>
 
-      <!-- Un cubo flotando a 1m frente al usuario -->
+      <!-- Fondo y piso SOLO para VR (se esconden en AR) -->
+      <a-sky
+        color="#20232a"
+        hide-in-ar-mode="true"
+      ></a-sky>
+
+      <a-plane
+        position="0 0 -4"
+        rotation="-90 0 0"
+        width="8"
+        height="8"
+        color="#444"
+        hide-in-ar-mode="true"
+      ></a-plane>
+
+      <!-- Objeto principal: un cubo flotando a 1m -->
       <a-box
+        id="cubo"
         position="0 1.2 -1"
         depth="0.3"
         height="0.3"
         width="0.3"
-        color="#FF4444"
-      ></a-box>
+        color="#ff4444"
+        shadow="cast: true"
+      >
+      </a-box>
 
-      <!-- Luces simples -->
+      <!-- Luces -->
       <a-entity
         light="type: directional; intensity: 0.9"
-        position="1 2 1"
+        position="1 3 2"
       ></a-entity>
       <a-entity light="type: ambient; intensity: 0.4"></a-entity>
     </a-scene>
+
+    <script>
+      // DEBUG: ¿el navegador soporta AR (immersive-ar)?
+      if (navigator.xr) {
+        navigator.xr.isSessionSupported("immersive-ar").then((supported) => {
+          console.log("WebXR immersive-ar soportado:", supported);
+        });
+      } else {
+        console.log("navigator.xr NO disponible (sin WebXR).");
+      }
+    </script>
   </body>
 </html>
