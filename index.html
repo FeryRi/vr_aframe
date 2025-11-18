@@ -8,7 +8,7 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <!-- Postprocessing -->
   <script src="https://cdn.jsdelivr.net/gh/supermedium/superframe@master/components/postprocessing/dist/aframe-postprocessing-component.min.js"></script>
-  <!-- Hybrid controls -->
+  <!-- Hybrid controls (adds movement-controls & laser-controls) -->
   <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@latest/dist/aframe-extras.min.js"></script>
   <style>body{margin:0;background:#000}</style>
 </head>
@@ -20,7 +20,6 @@
 
     <!-- ===== ASSETS ===== -->
     <a-assets>
-      <!-- Model -->
       <a-asset-item id="model" src="3Dmodel.glb"></a-asset-item>
 
       <!-- 360 panos -->
@@ -28,7 +27,7 @@
       <img id="p2" src="360image02.jpg">
       <img id="p3" src="360image03.jpg">
 
-      <!-- Images (distinct) -->
+      <!-- Images -->
       <img id="toggleImg" src="ola.png">
       <img id="posterImg" src="poster.jpg">
       <img id="texTexture" src="texture.jpg">
@@ -38,22 +37,25 @@
       <audio id="beep" src="sound.mp3"></audio>
     </a-assets>
 
-    <!-- SKY / ENV (p1 visible; env reflections set in script) -->
+    <!-- SKY / ENV -->
     <a-sky id="sky" src="#p1" rotation="0 -90 0"></a-sky>
 
     <!-- LIGHTS -->
-    <a-entity id="sun"
-      light="type: directional; intensity: 1.25; castShadow: true"
-      position="5 7 5" rotation="-45 45 0"></a-entity>
+    <a-entity id="sun" light="type: directional; intensity: 1.25; castShadow: true"
+              position="5 7 5" rotation="-45 45 0"></a-entity>
     <a-entity light="type: ambient; intensity: 0.35"></a-entity>
 
-    <!-- RIG + CAMERA + CONTROLS -->
-    <a-entity id="rig" position="0 1.6 0" movement-controls="controls: keyboard; speed: 0.18">
+    <!-- ===== RIG + CAMERA + CONTROLS (PC keyboard + VR gamepad) ===== -->
+    <!-- movement-controls handles keyboard (WASD/arrows) on desktop and thumbstick in VR -->
+    <a-entity id="rig" position="0 1.6 0"
+              movement-controls="controls: gamepad,keyboard; speed: 0.2">
       <a-entity id="camera" camera look-controls></a-entity>
+      <!-- Laser pointers in VR (both hands) -->
+      <a-entity laser-controls="hand: left"  raycaster="objects: .interactable"></a-entity>
       <a-entity laser-controls="hand: right" raycaster="objects: .interactable"></a-entity>
     </a-entity>
 
-    <!-- Mouse cursor/ray -->
+    <!-- Mouse ray for desktop interaction -->
     <a-entity cursor="rayOrigin: mouse" raycaster="objects: .interactable"></a-entity>
 
     <!-- TRANSPARENT SHADOW-ONLY GROUND -->
@@ -63,7 +65,7 @@
     <!-- ===== CLUSTER A: BASIC + INTERACTION ===== -->
     <a-box position="-3 1 -4" rotation="0 30 0" color="#4CC3D9" shadow="cast: true"></a-box>
 
-    <!-- Toggle image (starts hidden). Image slightly nearer so it's not occluded -->
+    <!-- Toggle image (starts hidden; image slightly nearer) -->
     <a-box id="toggleBox" position="-1.4 1.2 -4" color="#FFFFFF" width="0.9" height="0.6" depth="0.2"
            class="interactable" shadow="cast: true"></a-box>
     <a-image id="revealed-image" src="#toggleImg" position="-1.4 1.9 -3.8" width="1.2" height="0.7" visible="false"></a-image>
@@ -89,7 +91,6 @@
     <a-sound id="audio" src="#beep" autoplay="false" position="7.6 1.1 -4"></a-sound>
 
     <!-- ===== CLUSTER D: VIDEO + POSTER ===== -->
-    <!-- a-video clickable: play/pause on tap/click -->
     <a-video id="screen" class="interactable"
              src="#vid" position="-5 2 -8" width="4" height="2.25"
              material="shader: flat" shadow="cast: true"></a-video>
@@ -124,7 +125,7 @@
 
   <!-- ===== SCRIPTS ===== -->
   <script>
-    // Step 5: Teleport component
+    // Teleport component
     AFRAME.registerComponent('teleport-on-click', {
       init: function () {
         this.el.addEventListener('click', () => {
@@ -135,7 +136,7 @@
       }
     });
 
-    // Shadow-only transparent ground (THREE.ShadowMaterial)
+    // Transparent shadow ground
     AFRAME.registerComponent('shadow-receiver', {
       schema: { opacity: { default: 0.28 } },
       init() {
@@ -156,15 +157,12 @@
         });
       }
     });
-    // Attach the shadow-receiver to the ground
     document.addEventListener('DOMContentLoaded', () => {
       const ground = document.getElementById('ground');
       if (ground) ground.setAttribute('shadow-receiver', 'opacity: 0.28');
     });
 
-    // Main scene setup
     const scene = document.querySelector('a-scene');
-
     scene.addEventListener('loaded', () => {
       // Soften shadows
       const sun = document.getElementById('sun').getObject3D('light');
@@ -179,7 +177,7 @@
         cam.updateProjectionMatrix();
       }
 
-      // Mobile video unlock (first touch) and click-to-play/pause
+      // Mobile video unlock + click play/pause
       const videoEl = document.getElementById('vid');
       const screenEl = document.getElementById('screen');
       const unlock = () => { videoEl.play().then(()=>videoEl.pause()).catch(()=>{}); window.removeEventListener('touchstart', unlock); };
@@ -189,7 +187,7 @@
         else { videoEl.pause(); }
       });
 
-      // Toggle image (boolean toggle, starts hidden)
+      // Toggle image (starts hidden)
       const box = document.getElementById('toggleBox');
       const img = document.getElementById('revealed-image');
       box.addEventListener('click', () => {
@@ -207,18 +205,16 @@
           (tex) => {
             if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
             tex.mapping = THREE.EquirectangularReflectionMapping;
-            scene.object3D.background = tex; // keep visible equirect background
+            scene.object3D.background = tex;
             const envRT = pmrem.fromEquirectangular(tex);
-            scene.object3D.environment = envRT.texture; // reflections for PBR
+            scene.object3D.environment = envRT.texture;
           },
           undefined,
           (err) => console.warn('Env load error:', err)
         );
       }
 
-      // initial env
       setEnvFrom(document.getElementById('p1').getAttribute('src'));
-      // update env when sky changes
       const sky = document.getElementById('sky');
       sky.addEventListener('componentchanged', (e) => {
         if (e.detail.name === 'material' && e.detail.newData && e.detail.newData.src) {
