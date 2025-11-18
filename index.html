@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>A-Frame AR mínimo</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+
+    <!-- A-Frame (usa versión reciente con WebXR/AR) -->
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--
+      NOTA:
+      - No usamos <a-sky> ni fondo sólido para que se vea el passthrough.
+      - El botón "Enter VR/AR" lo pone A-Frame automáticamente.
+    -->
+    <a-scene
+      renderer="alpha: true; colorManagement: true; physicallyCorrectLights: true"
+      webxr="requiredFeatures: local-floor; optionalFeatures: bounded-floor"
+      vr-mode-ui="enabled: true"
+      embedded
+    >
+      <!-- Cámara en altura de ojos -->
+      <a-entity id="cameraRig">
+        <a-entity
+          camera
+          position="0 1.6 0"
+          look-controls
+        ></a-entity>
+      </a-entity>
+
+      <!-- Un cubo flotando a 1m frente al usuario -->
+      <a-box
+        position="0 1.2 -1"
+        depth="0.3"
+        height="0.3"
+        width="0.3"
+        color="#FF4444"
+      ></a-box>
+
+      <!-- Luces simples -->
+      <a-entity
+        light="type: directional; intensity: 0.9"
+        position="1 2 1"
+      ></a-entity>
+      <a-entity light="type: ambient; intensity: 0.4"></a-entity>
+    </a-scene>
+  </body>
+</html>
