@@ -2,10 +2,10 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>A-Frame AR con hit-test</title>
+    <title>AR + agarrar objeto (Quest 2)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
-    <!-- A-Frame 1.7.x con soporte AR/WebXR -->
+    <!-- A-Frame 1.7.x -->
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 
     <style>
@@ -19,36 +19,30 @@
   </head>
 
   <body>
-    <!--
-      Escena en modo AR:
-      - webxr pide la feature "hit-test" para detectar superficies reales.
-      - ar-hit-test mueve el objeto #caja al tocar la pantalla / presionar trigger.
-    -->
     <a-scene
       renderer="alpha: true; physicallyCorrectLights: true; colorManagement: true"
-      webxr="optionalFeatures: hit-test;"
-      ar-hit-test="target: #caja;"
+      webxr="optionalFeatures: hit-test, hand-tracking;"
       xr-mode-ui="XRMode: ar; enterAREnabled: true; enterVREnabled: false"
       vr-mode-ui="enabled: false"
+      obb-collider="showColliders: false"
       embedded
     >
-      <!-- Cámara "normal" de A-Frame -->
-      <a-entity camera position="0 1.6 0"></a-entity>
+      <!-- Manos con gesto de "pinch to grab" -->
+      <a-entity id="leftHand"  hand-tracking-grab-controls="hand: left;"></a-entity>
+      <a-entity id="rightHand" hand-tracking-grab-controls="hand: right;"></a-entity>
 
-      <!-- Objeto que vamos a colocar en el mundo real -->
+      <!-- Objeto que se puede agarrar -->
       <a-box
-        id="caja"
-        position="0 0 -1"
-        depth="0.2"
-        height="0.2"
-        width="0.2"
+        grabbable
+        position="0 1.1 -0.8"
+        depth="0.25"
+        height="0.25"
+        width="0.25"
         color="#FF4444"
         shadow="cast: true; receive: false"
-        visible="false"
-        hide-on-enter-ar="true"
       ></a-box>
 
-      <!-- Luz para que se vea mejor -->
+      <!-- Luces -->
       <a-entity light="type: directional; intensity: 1" position="1 3 2"></a-entity>
       <a-entity light="type: ambient; intensity: 0.4"></a-entity>
     </a-scene>
