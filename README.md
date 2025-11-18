@@ -689,19 +689,135 @@ Example:
 ---
 
 ## Step 11: Hybrid Controls (PC + VR)
+Example:
 ```
-<!-- Extras: movement-controls (gamepad/keyboard) -->
-<script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@latest/dist/aframe-extras.min.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Step 11</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- A-Frame core -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- movement-controls + laser-controls -->
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@latest/dist/aframe-extras.min.js"></script>
+  <style>body{margin:0;background:#000}</style>
+</head>
+<body>
+  <a-scene
+    renderer="antialias: true; physicallyCorrectLights: true; colorManagement: true; toneMapping: ACESFilmicToneMapping"
+    shadow="type: pcfsoft">
 
-<a-entity id="rig" movement-controls="controls: gamepad,keyboard; speed: 0.2" position="0 1.6 0">
-  <a-entity id="camera" camera look-controls></a-entity>
-  <a-entity laser-controls="hand: left"  raycaster="objects: .interactable"></a-entity>
-  <a-entity laser-controls="hand: right" raycaster="objects: .interactable"></a-entity>
-</a-entity>
+    <!-- Lights -->
+    <a-entity light="type: ambient; intensity: 0.45"></a-entity>
+    <a-entity id="sun" light="type: directional; intensity: 1.25; castShadow: true"
+              position="6 10 6" rotation="-45 30 0"></a-entity>
+
+    <!-- RIG: start position -->
+    <a-entity id="rig" position="0 1.6 -2" movement-controls="controls: gamepad,keyboard; speed: 0.22">
+      <a-entity id="camera" camera look-controls>
+        <!-- HUD TIMER (arriba y centrado) -->
+        <a-entity id="hud" position="0 0.35 -1.2">
+          <a-plane width="0.6" height="0.22" color="#000000" opacity="0.28"></a-plane>
+          <a-text id="timerText" value="00:00" align="center" width="1.8" position="0 0 0.01" color="#FFFFFF"></a-text>
+        </a-entity>
+      </a-entity>
+      <a-entity laser-controls="hand: left"></a-entity>
+      <a-entity laser-controls="hand: right"></a-entity>
+    </a-entity>
+
+    <!-- Optional mouse cursor -->
+    <a-entity cursor="rayOrigin: mouse"></a-entity>
+
+    <!-- FLOOR-->
+    <a-plane id="floor" rotation="-90 0 0" width="20" height="80" position="0 0 -40"
+             material="color: #ffffff; metalness: 0; roughness: 1"
+             shadow="receive: true"></a-plane>
+
+    <!-- Corridor walls -->
+    <a-box position="-2.5 1.2 -40" depth="80" height="2.4" width="0.25" color="#bac6d1" shadow="cast: true"></a-box>
+    <a-box position=" 2.5 1.2 -40" depth="80" height="2.4" width="0.25" color="#bac6d1" shadow="cast: true"></a-box>
+    <a-box position="0 1.2 0" depth="0.25" height="2.4" width="5" color="#c6cfd8" shadow="cast: true"></a-box>
+
+    <!-- START text -->
+    <a-text value="START" position="0 1.2 -3" align="center" width="6" color="#003366"
+            animation="property: position; to: 0 1.3 -3; dir: alternate; dur: 1400; loop: true; easing: easeInOutSine"></a-text>
+
+    <!-- Props -->
+    <a-sphere position="-1 0.8 -10" radius="0.4"
+              material="metalness: 1; roughness: 0.08; color: #888"
+              shadow="cast: true"></a-sphere>
+
+    <a-box position="1 0.9 -20" width="0.9" height="0.9" depth="0.9"
+           material="color: #aaccff; opacity: 0.35; transparent: true; metalness: 0.15; roughness: 0.05"
+           shadow="cast: true"></a-box>
+
+    <a-cone position="0 1.0 -30" radius-bottom="0.6" height="1.2"
+            material="color: #ff4fd7; metalness: 0.0; roughness: 0.25"
+            shadow="cast: true"></a-cone>
+
+    <a-box position="0 0.75 -45" width="1.2" height="1.5" depth="0.6" color="#9fb3c8" shadow="cast: true"></a-box>
+
+    <a-plane position="0 1.5 -78" rotation="0 0 0" width="3" height="2"
+             material="color: #5ad08f" shadow="cast: true"></a-plane>
+    <a-text value="EXIT" position="0 1.5 -77.98" align="center" width="6" color="#063a21"></a-text>
+
+  </a-scene>
+
+  <script>
+    // Sky + reflections (PMREM)
+    const sceneEl = document.querySelector('a-scene');
+
+    function makeEquirectGradient(w=2048,h=1024){
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      const g = c.getContext('2d');
+      const grad = g.createLinearGradient(0,0,0,h);
+      grad.addColorStop(0.00, '#9fc9ff');
+      grad.addColorStop(0.65, '#cfe6ff');
+      grad.addColorStop(1.00, '#d8dbe0');
+      g.fillStyle = grad; g.fillRect(0,0,w,h);
+      return new THREE.CanvasTexture(c);
+    }
+
+    sceneEl.addEventListener('loaded', () => {
+      const renderer = sceneEl.renderer; if (!renderer) return;
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const tex = makeEquirectGradient();
+      if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      sceneEl.object3D.background = tex;
+      const envRT = pmrem.fromEquirectangular(tex);
+      sceneEl.object3D.environment = envRT.texture;
+
+      // Soft shadows
+      const sun = document.getElementById('sun').getObject3D('light');
+      if (sun && sun.shadow) {
+        sun.shadow.mapSize.set(1024,1024);
+        sun.shadow.radius = 3;
+        sun.shadow.bias = -0.0001;
+        sun.shadow.normalBias = 0.02;
+        const cam = sun.shadow.camera;
+        cam.near = 0.5; cam.far = 120;
+        cam.left = -20; cam.right = 20; cam.top = 20; cam.bottom = -20;
+        cam.updateProjectionMatrix();
+      }
+
+      // Timer HUD
+      const t0 = performance.now();
+      const timerText = document.getElementById('timerText');
+      function updateTimer(){
+        const dt = Math.floor((performance.now() - t0)/1000);
+        const mm = String(Math.floor(dt/60)).padStart(2,'0');
+        const ss = String(dt%60).padStart(2,'0');
+        timerText.setAttribute('value', `${mm}:${ss}`);
+        requestAnimationFrame(updateTimer);
+      }
+      updateTimer();
+    });
+  </script>
+</body>
+</html>
 ```
-
-*iOS (Safari) tip:* for gyroscope control, add a button that requests permission via `DeviceMotionEvent.requestPermission()`.
-
 ---
 
 ## Step 12: Publish on GitHub Pages
