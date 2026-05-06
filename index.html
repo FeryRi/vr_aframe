@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>AR + manos + GLB (Quest 2)</title>
+    <title>Fantasía Marina Oscura</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
     <!-- A-Frame 1.7.x -->
@@ -13,61 +13,119 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
-        background: transparent; /* deja ver la cámara (passthrough) */
+        background: #000;
+      }
+      #ui {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        z-index: 10;
+        color: #d1e8ff;
+        font-family: system-ui, sans-serif;
+        font-size: 14px;
+        text-shadow: 0 0 12px rgba(0, 0, 0, 0.75);
+      }
+      a-scene {
+        width: 100vw;
+        height: 100vh;
       }
     </style>
   </head>
 
   <body>
+    <div id="ui">Escena de fantasía marina - mira alrededor y toca los cristales brillantes</div>
+
     <a-scene
-      renderer="alpha: true; physicallyCorrectLights: true; colorManagement: true"
-      webxr="optionalFeatures: hit-test, hand-tracking;"
-      xr-mode-ui="XRMode: ar; enterAREnabled: true; enterVREnabled: false"
-      vr-mode-ui="enabled: false"
+      renderer="antialias: true; physicallyCorrectLights: true; colorManagement: true"
+      fog="type: exponential; color: #001020; density: 0.03"
       embedded
     >
-      <!-- Assets: tu modelo GLB -->
       <a-assets>
-        <!-- Cambia la ruta a tu propio archivo GLB -->
-        <a-asset-item id="modelo-glb" src="flecha.glb"></a-asset-item>
+        <img id="p1" src="360image01.jpg" />
+        <img id="p2" src="360image02.jpg" />
+        <img id="p3" src="360image03.jpg" />
+        <img id="coral" src="texture.jpg" />
+        <audio id="ambience" src="sound.mp3"></audio>
       </a-assets>
 
-      <!-- MANOS: izquierda y derecha -->
-      <a-entity
-        id="leftHand"
-        hand-tracking-controls="hand: left"
-        hand-tracking-grab-controls="hand: left"
-      ></a-entity>
+      <a-sky src="#p1" rotation="0 -90 0"></a-sky>
 
-      <a-entity
-        id="rightHand"
-        hand-tracking-controls="hand: right"
-        hand-tracking-grab-controls="hand: right"
-      ></a-entity>
+      <a-entity light="type: ambient; color: #446688; intensity: 0.6"></a-entity>
+      <a-entity light="type: point; color: #91d9ff; intensity: 1.4; distance: 18" position="-3 2 -2"></a-entity>
+      <a-entity light="type: point; color: #ff94ff; intensity: 0.9; distance: 14" position="2 1 3"></a-entity>
 
-      <!-- OBJETO 1: cubo grabbable -->
-      <a-box
-        grabbable
-        position="-0.3 1.1 -0.8"
-        depth="0.25"
-        height="0.25"
-        width="0.25"
-        color="#FF4444"
-        shadow="cast: true; receive: false"
-      ></a-box>
+      <a-entity position="0 1.6 0">
+        <a-camera look-controls="pointerLockEnabled: false"></a-camera>
+      </a-entity>
 
-      <!-- OBJETO 2: modelo GLB grabbable -->
-      <a-gltf-model
-        grabbable
-        src="#modelo-glb"
-        position="0.3 1.0 -0.9"
-        scale="0.2 0.2 0.2"
-        shadow="cast: true; receive: false"
-      ></a-gltf-model>
+      <a-entity position="0 0 -4" rotation="-90 0 0">
+        <a-plane width="50" height="50" color="#02111e" material="shader: flat; opacity: 0.95" shadow="receive: true"></a-plane>
+      </a-entity>
 
-      <!-- Luces -->
-      <a-entity light="type: directional; intensity: 1" position="1 3 2"></a-entity>
-      <a-entity light="type: ambient; intensity: 0.4"></a-entity>
+      <a-entity class="floater" position="-1.8 0.7 -2" rotation="0 45 0">
+        <a-torus-knot radius="0.4" radius-tubular="0.08" segments-tubular="64" segments-radial="16"
+                      material="color: #74ccff; emissive: #6fd6ff; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.25"></a-torus-knot>
+      </a-entity>
+
+      <a-entity class="floater" position="1.8 1.1 -3.5">
+        <a-sphere radius="0.35" material="color: #a878ff; emissive: #c396ff; emissiveIntensity: 0.55; opacity: 0.8; transparent: true"></a-sphere>
+      </a-entity>
+
+      <a-entity class="floater" position="2.4 0.6 -1.5" rotation="0 0 90">
+        <a-cone radius-bottom="0.35" radius-top="0.05" height="1.1"
+                material="color: #2a9cff; emissive: #79c6ff; emissiveIntensity: 0.3; opacity: 0.9; transparent: true"></a-cone>
+      </a-entity>
+
+      <a-entity position="-2.8 0.25 -3.2">
+        <a-box width="0.25" height="0.8" depth="0.25" material="color: #103b52; metalness: 0.3; roughness: 0.4"></a-box>
+        <a-box position="0.18 0.18 0" width="0.18" height="0.5" depth="0.18" material="color: #5f8cff; emissive: #46b8ff; emissiveIntensity: 0.25"></a-box>
+        <a-box position="-0.18 0.12 0" width="0.14" height="0.4" depth="0.14" material="color: #4f6fff; emissive: #80d2ff; emissiveIntensity: 0.3"></a-box>
+      </a-entity>
+
+      <a-entity position="2.6 0.2 -4.4">
+        <a-sphere radius="0.2" material="color: #fff0a5; emissive: #fff8c2; emissiveIntensity: 0.7; opacity: 0.9; transparent: true"></a-sphere>
+        <a-animation attribute="position" dur="3200" direction="alternate" repeat="indefinite" from="2.6 0.2 -4.4" to="2.6 0.5 -4.6"></a-animation>
+      </a-entity>
+
+      <a-entity position="0.4 0.2 -2.8" rotation="0 0 0">
+        <a-entity geometry="primitive: torus; radius: 0.25; radiusTubular: 0.06" material="color: #352f8b; emissive: #5a4fff; emissiveIntensity: 0.35"></a-entity>
+      </a-entity>
+
+      <a-entity id="bubbleLayer">
+        <a-sphere position="-0.6 1.3 -2.1" radius="0.08" material="color: #95eeff; opacity: 0.5; transparent: true"
+                  animation="property: position; to: -0.6 1.7 -2.2; dur: 4000; loop: true"></a-sphere>
+        <a-sphere position="0.8 0.5 -3.0" radius="0.07" material="color: #b8f0ff; opacity: 0.55; transparent: true"
+                  animation="property: position; to: 0.8 0.9 -3.1; dur: 3600; loop: true"></a-sphere>
+        <a-sphere position="1.2 0.8 -1.9" radius="0.09" material="color: #88d8ff; opacity: 0.45; transparent: true"
+                  animation="property: position; to: 1.2 1.3 -2.0; dur: 4500; loop: true"></a-sphere>
+      </a-entity>
+
+      <a-entity sound="src: #ambience; loop: true; autoplay: true; volume: 0.5"></a-entity>
+
+      <a-entity id="fogGlobe" position="0 1.4 -1">
+        <a-sphere radius="0.18" material="color: #ba99ff; emissive: #d3bfff; emissiveIntensity: 0.65; opacity: 0.55; transparent: true"></a-sphere>
+      </a-entity>
+
+      <script>
+        AFRAME.registerComponent('gentle-float', {
+          schema: {
+            amplitude: { type: 'number', default: 0.18 },
+            speed: { type: 'number', default: 0.9 }
+          },
+          init: function () {
+            this.startY = this.el.object3D.position.y;
+          },
+          tick: function (time) {
+            const offset = Math.sin(time / 800 * this.data.speed) * this.data.amplitude;
+            this.el.object3D.position.y = this.startY + offset;
+            this.el.object3D.rotation.y += 0.0015 * this.data.speed;
+          }
+        });
+
+        document.querySelectorAll('.floater').forEach((el, index) => {
+          el.setAttribute('gentle-float', { amplitude: 0.16 + index * 0.06, speed: 0.9 + index * 0.15 });
+        });
+      </script>
     </a-scene>
   </body>
 </html>
